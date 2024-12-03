@@ -59,7 +59,8 @@ export const DetailScreen: React.FC<DetailScreenProps> = ({ route }) => {
         >
           <Text style={styles.sectionTitle}>Overview</Text>
           <Icon 
-            name={showFullDescription ? "chevron-up" : "chevron-down"} 
+            name={showFullDescription ? "keyboard_arrow_up" : "keyboard_arrow_down"} 
+            type="material"
             color="#888" 
             size={24} 
           />

@@ -12,7 +12,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#252628',
     borderRadius: 8,
     paddingHorizontal: 12,
-    marginBottom: 16,
+    marginBottom: 60,
   },
   searchInput: {
     flex: 1,
@@ -22,7 +22,7 @@ export const styles = StyleSheet.create({
     fontSize: 16,
   },
   categoryList: {
-    marginBottom: 16,
+    marginBottom: 60,
   },
   categoryChip: {
     backgroundColor: '#252628',
@@ -49,7 +49,7 @@ export const styles = StyleSheet.create({
     borderWidth: 0,
     borderRadius: 12,
     padding: 16,
-    marginBottom: 16,
+    marginBottom: 60,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -298,7 +298,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#252628',
     borderRadius: 12,
     padding: 16,
-    marginVertical: 16,
+    marginBottom: 60,
     flexDirection: 'row',
     alignItems: 'center',
   },
