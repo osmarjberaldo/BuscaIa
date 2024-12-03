@@ -1,0 +1,56 @@
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { ThemeProvider } from '@rneui/themed';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { HomeScreen } from './src/screens/HomeScreen';
+import { DetailScreen } from './src/screens/DetailScreen';
+import { RootStackParamList } from './src/types/navigation';
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
+
+const theme = {
+  lightColors: {
+    primary: '#2089dc',
+  },
+  darkColors: {
+    primary: '#2089dc',
+    background: '#1a1b1e',
+    secondary: '#252628',
+    white: '#ffffff',
+  },
+  mode: 'dark',
+};
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <ThemeProvider theme={theme}>
+        <NavigationContainer>
+          <Stack.Navigator
+            screenOptions={{
+              headerStyle: {
+                backgroundColor: '#1a1b1e',
+              },
+              headerTintColor: '#fff',
+              headerTitleStyle: {
+                fontWeight: 'bold',
+              },
+            }}
+          >
+            <Stack.Screen 
+              name="Home" 
+              component={HomeScreen} 
+              options={{ title: 'BuscaIA' }}
+            />
+            <Stack.Screen 
+              name="Detail" 
+              component={DetailScreen}
+              options={({ route }) => ({ title: route.params.tool.name })}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </ThemeProvider>
+    </SafeAreaProvider>
+  );
+}
