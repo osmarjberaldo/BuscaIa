@@ -4,7 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StyleSheet, View, TextInput, TouchableOpacity, FlatList, Pressable, Image, ScrollView, Linking, StatusBar } from 'react-native';
 import { ThemeProvider, Text, Card, Button, Icon } from '@rneui/themed';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -27,10 +27,43 @@ const theme = {
   },
   darkColors: {
     primary: '#2089dc',
-    background: '#1a1b1e',
-    secondary: '#252628',
+    background: '#252628',
+    secondary: '#2f3136',
   },
   mode: 'dark',
+};
+
+const categories = {
+  'Website Interaction': {
+    icon: 'globe',
+    type: 'font-awesome',
+    color: '#4CAF50'
+  },
+  'Voice': {
+    icon: 'microphone',
+    type: 'font-awesome',
+    color: '#2196F3'
+  },
+  'Development': {
+    icon: 'code',
+    type: 'font-awesome',
+    color: '#9C27B0'
+  },
+  'Marketing': {
+    icon: 'trending-up',
+    type: 'feather',
+    color: '#FF9800'
+  },
+  'Image': {
+    icon: 'image',
+    type: 'feather',
+    color: '#E91E63'
+  },
+  'Text': {
+    icon: 'file-text',
+    type: 'feather',
+    color: '#607D8B'
+  }
 };
 
 const mockAITools = [
@@ -39,28 +72,19 @@ const mockAITools = [
     name: 'Talk to the Site!',
     description: 'Chat with websites, get answers and summaries.',
     longDescription: 'Talk to the Site! is a Chrome extension aimed at enhancing a user\'s browsing experience by enabling more interactive and conversational engagement with websites. It is designed to simplify the process of information retrieval, making it more intuitive and user-friendly.',
-    category: 'Website interaction',
+    category: 'Website Interaction',
     icon: 'https://img.icons8.com/fluency/96/chatbot.png',
     pricing: 'No pricing',
-    rating: 0,
+    rating: 4.8,
     isVerified: true,
-    primaryTask: 'Website interaction',
-    chromeStoreUrl: 'https://chrome.google.com/webstore',
-    features: [
-      'Chat with websites directly',
-      'Get instant summaries',
-      'Interactive browsing experience',
-      'Information retrieval made simple'
-    ],
-    releaseDate: 'December 2, 2024',
   },
   {
     id: '2',
     name: 'VoiceFlux',
-    description: 'AI-powered voice generation',
+    description: 'AI-powered voice generation and cloning',
     category: 'Voice',
     icon: 'https://img.icons8.com/fluency/96/microphone.png',
-    pricing: 'No pricing',
+    pricing: 'Free tier',
     rating: 4.5,
     isVerified: true,
   },
@@ -70,7 +94,7 @@ const mockAITools = [
     description: 'AI app development platform',
     category: 'Development',
     icon: 'https://img.icons8.com/fluency/96/code.png',
-    pricing: 'Free tier available',
+    pricing: 'Free tier',
     rating: 4.2,
     isVerified: true,
   },
@@ -83,6 +107,44 @@ const mockAITools = [
     pricing: 'From $49/mo',
     rating: 4.7,
     isVerified: true,
+  },
+  {
+    id: '5',
+    name: 'ImageMind',
+    description: 'AI image generation and editing',
+    category: 'Image',
+    icon: 'https://img.icons8.com/fluency/96/image.png',
+    pricing: 'Free tier',
+    rating: 4.6,
+    isVerified: true,
+  },
+  {
+    id: '6',
+    name: 'TextCraft',
+    description: 'Advanced text generation and analysis',
+    category: 'Text',
+    icon: 'https://img.icons8.com/fluency/96/text.png',
+    pricing: 'Free tier',
+    rating: 4.4,
+    isVerified: true,
+  }
+];
+
+const mockNews = [
+  {
+    id: '1',
+    title: 'Nova IA da Google revoluciona busca na web',
+    date: '2024-03-10',
+  },
+  {
+    id: '2',
+    title: 'OpenAI lança nova versão do GPT-4',
+    date: '2024-03-09',
+  },
+  {
+    id: '3',
+    title: 'IA brasileira inova no mercado de tecnologia',
+    date: '2024-03-08',
   },
 ];
 
@@ -294,9 +356,37 @@ function SearchResults({ searchText }: { searchText: string }) {
 function HomeScreen({ navigation }: any) {
   const [searchText, setSearchText] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentNewsIndex((prevIndex) => 
+        prevIndex === mockNews.length - 1 ? 0 : prevIndex + 1
+      );
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const filteredTools = mockAITools.filter(tool => 
+    (!selectedCategory || tool.category === selectedCategory) &&
+    (!searchText || 
+      tool.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      tool.description.toLowerCase().includes(searchText.toLowerCase()) ||
+      tool.category.toLowerCase().includes(searchText.toLowerCase())
+    )
+  );
+
+  const handleCategoryPress = (category: string) => {
+    setSelectedCategory(category === selectedCategory ? null : category);
+  };
 
   const renderCard = ({ item }: { item: typeof mockAITools[0] }) => (
-    <TouchableOpacity onPress={() => navigation.navigate('Detail', { tool: item })}>
+    <TouchableOpacity 
+      onPress={() => navigation.navigate('Detail', { tool: item })}
+      style={styles.cardTouchable}
+    >
       <Card containerStyle={styles.card}>
         <View style={styles.cardHeader}>
           <View style={styles.iconContainer}>
@@ -320,9 +410,24 @@ function HomeScreen({ navigation }: any) {
             </View>
             <Text style={styles.cardDescription}>{item.description}</Text>
             <View style={styles.cardFooter}>
-              <View style={styles.categoryBadge}>
-                <Text style={styles.categoryText}>{item.category}</Text>
-              </View>
+              <TouchableOpacity 
+                onPress={() => handleCategoryPress(item.category)}
+                style={[
+                  styles.categoryBadge, 
+                  { backgroundColor: categories[item.category].color + '20' }
+                ]}
+              >
+                <Icon
+                  name={categories[item.category].icon}
+                  type={categories[item.category].type}
+                  size={12}
+                  color={categories[item.category].color}
+                  style={styles.categoryIcon}
+                />
+                <Text style={[styles.categoryText, { color: categories[item.category].color }]}>
+                  {item.category}
+                </Text>
+              </TouchableOpacity>
               <View style={styles.pricingContainer}>
                 <Text style={styles.pricingText}>{item.pricing}</Text>
                 <View style={styles.ratingContainer}>
@@ -342,55 +447,93 @@ function HomeScreen({ navigation }: any) {
     </TouchableOpacity>
   );
 
+  const renderCategories = () => (
+    <ScrollView 
+      horizontal 
+      showsHorizontalScrollIndicator={false}
+      style={styles.categoriesContainer}
+      contentContainerStyle={styles.categoriesContent}
+    >
+      <TouchableOpacity
+        style={[
+          styles.categoryChip,
+          !selectedCategory && styles.categoryChipSelected
+        ]}
+        onPress={() => handleCategoryPress(null)}
+      >
+        <Text style={[
+          styles.categoryChipText,
+          !selectedCategory && styles.categoryChipTextSelected
+        ]}>All</Text>
+      </TouchableOpacity>
+      {Object.entries(categories).map(([category, { icon, type, color }]) => (
+        <TouchableOpacity
+          key={category}
+          style={[
+            styles.categoryChip,
+            selectedCategory === category && styles.categoryChipSelected,
+            { borderColor: color }
+          ]}
+          onPress={() => handleCategoryPress(category)}
+        >
+          <Icon
+            name={icon}
+            type={type}
+            size={14}
+            color={selectedCategory === category ? '#fff' : color}
+            style={styles.categoryChipIcon}
+          />
+          <Text style={[
+            styles.categoryChipText,
+            selectedCategory === category && styles.categoryChipTextSelected
+          ]}>{category}</Text>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  );
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text h3 style={styles.title}>BuscaIA</Text>
-        <Text style={styles.subtitle}>
-          {mockAITools.length} AIs available for various tasks
-        </Text>
+        <View style={styles.titleContainer}>
+          <Image
+            source={require('./assets/icon.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
+          <Text h3 style={styles.title}>Busque uma IA</Text>
+        </View>
+        <View style={styles.newsBanner}>
+          <Text style={styles.newsText}>
+            {mockNews[currentNewsIndex].title}
+          </Text>
+        </View>
       </View>
 
       <View style={styles.searchContainer}>
-        <View style={styles.searchInputContainer}>
+        <View style={[styles.searchInputContainer, isSearchFocused && styles.searchInputContainerFocused]}>
+          <Icon name="search" size={20} color="#666" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Find AIs using AI"
+            placeholder="Search AI tools..."
             placeholderTextColor="#666"
             value={searchText}
             onChangeText={setSearchText}
             onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
           />
-          {searchText && (
-            <TouchableOpacity 
-              style={styles.clearButton}
-              onPress={() => {
-                setSearchText('');
-                setIsSearchFocused(false);
-              }}
-            >
-              <Text style={styles.clearButtonText}>×</Text>
-            </TouchableOpacity>
-          )}
         </View>
-        <TouchableOpacity style={styles.searchButton}>
-          <Icon name="search" color="white" />
-        </TouchableOpacity>
       </View>
 
-      {(searchText || isSearchFocused) ? (
-        <SearchResults searchText={searchText} />
-      ) : (
-        <View style={styles.content}>
-          <Text h4 style={styles.sectionTitle}>Just Launched</Text>
-          <FlatList
-            data={mockAITools}
-            keyExtractor={(item) => item.id}
-            renderItem={renderCard}
-            contentContainerStyle={styles.listContainer}
-          />
-        </View>
-      )}
+      {renderCategories()}
+
+      <FlatList
+        data={filteredTools}
+        renderItem={renderCard}
+        keyExtractor={item => item.id}
+        contentContainerStyle={styles.listContainer}
+        showsVerticalScrollIndicator={false}
+      />
     </View>
   );
 }
@@ -424,23 +567,28 @@ function TabNavigator() {
     <Tab.Navigator
       screenOptions={{
         tabBarStyle: {
-          backgroundColor: '#1a1b1e',
-          borderTopWidth: 0,
-          elevation: 0,
+          backgroundColor: theme.darkColors.secondary,
+          borderTopWidth: 1,
+          borderTopColor: '#3f4147',
           height: 60,
           paddingBottom: 8,
+          paddingTop: 8,
         },
-        tabBarActiveTintColor: '#2089dc',
+        tabBarActiveTintColor: theme.darkColors.primary,
         tabBarInactiveTintColor: '#888',
-        headerShown: false,
+        headerStyle: {
+          backgroundColor: theme.darkColors.background,
+        },
+        headerTintColor: '#fff',
       }}
     >
       <Tab.Screen
         name="Home"
         component={HomeStack}
         options={{
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Icon name="home" type="material" color={color} size={size} />
+            <Icon name="home" color={color} size={size} />
           ),
         }}
       />
@@ -494,21 +642,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1b1e',
   },
   header: {
-    padding: 20,
-    paddingTop: 40,
+    paddingHorizontal: 15,
+    paddingTop: 10,
+    paddingBottom: 5,
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 15,
+  },
+  logoImage: {
+    width: 32,
+    height: 32,
+    marginRight: 8,
   },
   title: {
     color: 'white',
-    marginBottom: 5,
-  },
-  subtitle: {
-    color: '#888',
-    fontSize: 16,
+    fontSize: 24,
+    textAlign: 'center',
   },
   searchContainer: {
     flexDirection: 'row',
-    padding: 20,
-    paddingTop: 0,
+    paddingHorizontal: 15,
+    paddingBottom: 4,
+    marginBottom: 10,
   },
   searchInputContainer: {
     flex: 1,
@@ -518,17 +676,18 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginRight: 10,
   },
+  searchInputContainerFocused: {
+    backgroundColor: '#2f3136',
+    borderColor: '#8b5cf6',
+    borderWidth: 1,
+  },
+  searchIcon: {
+    padding: 12,
+  },
   searchInput: {
     flex: 1,
     padding: 12,
     color: 'white',
-  },
-  clearButton: {
-    padding: 8,
-  },
-  clearButtonText: {
-    color: '#666',
-    fontSize: 20,
   },
   searchButton: {
     backgroundColor: '#2089dc',
@@ -575,17 +734,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   card: {
-    backgroundColor: '#252628',
-    borderWidth: 0,
+    marginHorizontal: 8,
+    marginVertical: 4,
     borderRadius: 12,
-    marginBottom: 10,
-    padding: 16,
-    margin: 10,
+    padding: 12,
+    backgroundColor: '#2f3136',
+    borderWidth: 1,
+    borderColor: '#3f4147',
     elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -628,14 +784,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   categoryBadge: {
-    backgroundColor: '#323438',
-    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: 12,
+    backgroundColor: '#3f4147',
+  },
+  categoryIcon: {
+    marginRight: 4,
   },
   categoryText: {
-    color: '#9ca3af',
     fontSize: 12,
+    color: '#fff',
   },
   pricingContainer: {
     flexDirection: 'row',
@@ -661,7 +822,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   listContainer: {
-    padding: 10,
+    paddingHorizontal: 8,
+    paddingTop: 0,
   },
   breadcrumb: {
     flexDirection: 'row',
@@ -697,18 +859,44 @@ const styles = StyleSheet.create({
   categoryChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#303136',
-    padding: 8,
-    borderRadius: 8,
-    marginBottom: 12,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 10,
+    backgroundColor: '#2f3136',
+    borderWidth: 1,
+    borderColor: '#3f4147',
+    minWidth: 100,
+    height: 36,
+  },
+  categoryChipSelected: {
+    backgroundColor: '#8b5cf6',
+    borderColor: '#8b5cf6',
+    transform: [{ scale: 1.05 }],
+  },
+  categoryChipIcon: {
+    marginRight: 6,
   },
   categoryChipText: {
-    color: '#888',
-    marginLeft: 8,
-  },
-  noRating: {
-    color: '#888',
+    color: '#fff',
     fontSize: 14,
+    textAlign: 'center',
+  },
+  categoryChipTextSelected: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  categoriesContainer: {
+    height: 36,
+    marginBottom: 4,
+  },
+  categoriesContent: {
+    paddingHorizontal: 15,
+    alignItems: 'center',
+  },
+  cardTouchable: {
+    transform: [{ scale: 1 }],
   },
   actionButtons: {
     flexDirection: 'row',
@@ -851,5 +1039,32 @@ const styles = StyleSheet.create({
   socialButtonText: {
     color: 'white',
     fontSize: 14,
+  },
+  newsBanner: {
+    backgroundColor: '#2f3136',
+    padding: 8,
+    marginBottom: 12,
+    borderRadius: 8,
+    width: '100%',
+  },
+  newsText: {
+    color: '#fff',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  categoryBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: '#3f4147',
+  },
+  categoryIcon: {
+    marginRight: 4,
+  },
+  categoryText: {
+    fontSize: 12,
+    color: '#fff',
   },
 });
